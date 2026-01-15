@@ -1,0 +1,246 @@
+project structure
+
+INVENTORY-SYSTEM/
+├── app/
+│   ├── Console/
+│   │   ├── Commands/
+│   │   │   ├── CheckDatabaseSchema.php
+│   │   │   ├── CreateAdminUser.php
+│   │   │   ├── FixNotifications.php
+│   │   │   ├── GenerateMissingReports.php
+│   │   │   ├── GenerateMonthlyReport.php
+│   │   │   ├── ResetAdminPassword.php
+│   │   │   ├── SendVerificationEmail.php
+│   │   │   ├── TestCommand.php
+│   │   │   ├── TestGmail.php
+│   │   │   ├── UpdateBeginningStock.php
+│   │   │   └── VerifyAdminUser.php
+│   │   └── Kernel.php
+│   ├── Exceptions/
+│   │   └── Handler.php
+│   ├── Exports/
+│   │   ├── InventoryExport.php
+│   │   ├── MonthlyReportExcelExport.php
+│   │   └── SimpleInventoryExport.php
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── Auth/
+│   │   │   │   ├── ForcePasswordChangeController.php
+│   │   │   │   ├── ForgotPasswordController.php
+│   │   │   │   ├── LoginController.php
+│   │   │   │   ├── ProfileController.php
+│   │   │   │   ├── RegisterController.php
+│   │   │   │   ├── VerificationController.php
+│   │   │   │   └── VerifyEmailController.php
+│   │   │   ├── AuthController.php
+│   │   │   ├── Controller.php
+│   │   │   ├── DashboardController.php
+│   │   │   ├── ItemController.php
+│   │   │   ├── NotificationController.php
+│   │   │   ├── ReportController.php
+│   │   │   ├── TeamController.php
+│   │   │   └── TeamRequestController.php
+│   │   └── Middleware/
+│   │       ├── AdminMiddleware.php
+│   │       ├── Authenticate.php
+│   │       ├── CheckEmailVerified.php
+│   │       ├── CheckForcePasswordChange.php
+│   │       ├── CheckPasswordExpiry.php
+│   │       ├── EncryptCookies.php
+│   │       ├── PreventRequestsDuringMaintenance.php
+│   │       ├── RedirectIfAuthenticated.php
+│   │       ├── StaffMiddleware.php
+│   │       ├── TrimStrings.php
+│   │       ├── TrustHosts.php
+│   │       ├── TrustProxies.php
+│   │       ├── ValidateSignature.php
+│   │       └── VerifyCsrfToken.php
+│   ├── Kernel.php
+│   ├── Livewire/
+│   │   └── DashboardTabs.php
+│   ├── Mail/
+│   │   ├── PasswordResetMail.php
+│   │   └── TestMail.php
+│   ├── Models/
+│   │   ├── InventoryLog.php
+│   │   ├── Item.php
+│   │   ├── MonthlyReport.php
+│   │   ├── Team.php
+│   │   ├── TeamInvitationNotification.php
+│   │   ├── TeamRequest.php
+│   │   └── User.php
+│   ├── Notifications/
+│   │   ├── AdminNotification.php
+│   │   ├── LandBankVerifyEmailNotification.php
+│   │   ├── NewRequestNotification.php
+│   │   ├── RequestStatusNotification.php
+│   │   ├── TeamNotification.php
+│   │   └── VerifyEmailNotification.php
+│   ├── Providers/
+│   │   ├── AppServiceProvider.php
+│   │   ├── AuthServiceProvider.php
+│   │   ├── BroadcastServiceProvider.php
+│   │   ├── EventServiceProvider.php
+│   │   └── RouteServiceProvider.php
+│   ├── Services/
+│   │   ├── NotificationManager.php
+│   │   └── ReportService.php
+│   └── Traits/
+│       └── HasCustomNotifications.php
+├── bootstrap/
+│   ├── cache/
+│   │   ├── packages.php
+│   │   └── services.php
+│   └── app.php
+├── config/
+│   ├── app.php
+│   ├── auth.php
+│   ├── broadcasting.php
+│   ├── cache.php
+│   ├── cors.php
+│   ├── database.php
+│   ├── excel.php
+│   ├── filesystems.php
+│   ├── hashing.php
+│   ├── logging.php
+│   ├── mail.php
+│   ├── queue.php
+│   ├── sanctum.php
+│   ├── services.php
+│   ├── session.php
+│   └── view.php
+├── database/
+│   ├── factories/
+│   │   └── UserFactory.php
+│   ├── migrations/
+│   │   ├── 2014_10_12_000000_create_users_table.php
+│   │   ├── 2014_10_12_100000_create_password_reset_tokens_table.php
+│   │   ├── 2019_08_19_000000_create_failed_jobs_table.php
+│   │   ├── 2019_12_14_000001_create_personal_access_tokens_table.php
+│   │   ├── 2025_12_04_105651_create_teams_table.php
+│   │   ├── 2025_12_04_105652_add_role_and_team_to_users_table.php
+│   │   ├── 2025_12_04_105652_create_items_table.php
+│   │   ├── 2025_12_04_105652_create_team_requests_table.php
+│   │   ├── 2025_12_08_140950_create_notifications_table.php
+│   │   ├── 2025_12_08_160740_update_notifications_table.php
+│   │   ├── 2025_12_08_160816_recreate_notifications_table.php
+│   │   ├── 2025_12_09_022305_add_is_read_to_notifications_table.php
+│   │   ├── 2025_12_09_022427_convert_to_laravel_notifications.php
+│   │   ├── 2025_12_09_035348_add_email_verification_to_users_table.php
+│   │   ├── 2025_12_09_063134_add_is_active_to_users_table.php
+│   │   ├── 2025_12_09_075214_add_is_read_to_notifications_table.php
+│   │   ├── 2025_12_10_012620_update_existing_user_names.php
+│   │   ├── 2025_12_10_084259_add_password_security_fields_to_users_table.php
+│   │   ├── 2025_12_14_160419_add_is_available_to_items_table.php
+│   │   ├── 2025_12_15_020511_ensure_notifications_schema_consistency.php
+│   │   ├── 2025_12_15_052142_add_password_reset_fields_to_users_table.php
+│   │   ├── 2025_12_16_012118_add_stock_columns_to_items_table.php
+│   │   ├── 2025_12_16_051105_add_profile_photo_path_to_users_table.php
+│   │   ├── 2025_12_16_074904_add_claimed_by_to_team_requests_table.php
+│   │   ├── 2025_12_19_062452_create_inventory_logs_table.php
+│   │   ├── 2025_12_22_015517_create_monthly_reports_table.php
+│   │   ├── 2025_12_22_073233_add_missing_fields_to_monthly_reports_table.php
+│   │   └── 2025_12_23_004830_fix_notifications_table_schema.php
+│   └── seeders/
+│       ├── DatabaseSeeder.php
+│       ├── MonthlyReportSeeder.php
+│       ├── TeamsTableSeeder.php
+│       └── UsersTableSeeder.php
+├── node_modules/
+├── public/
+│   ├── storage/
+│   │   └── profile-photos/
+│   ├── .htaccess
+│   ├── favicon.ico
+│   ├── index.php
+│   └── robots.txt
+├── resources/
+│   ├── css/
+│   ├── js/
+│   └── views/
+│       ├── auth/
+│       │   ├── force-password-change.blade.php
+│       │   ├── forgot-password.blade.php
+│       │   ├── login.blade.php
+│       │   ├── profile-settings.blade.php
+│       │   ├── reset-password.blade.php
+│       │   ├── verify-email.blade.php
+│       │   └── verify-success.blade.php
+│       ├── components/
+│       │   ├── analytics/
+│       │   │   └── inventory-records.blade.php
+│       │   ├── modals/
+│       │   │   ├── report-not-generated.blade.php
+│       │   │   ├── restock-confirmation.blade.php
+│       │   │   └── start-restocking.blade.php
+│       │   ├── alert.blade.php
+│       │   ├── analytics-modal.blade.php
+│       │   ├── app-layout.blade.php
+│       │   ├── dropdown-link.blade.php
+│       │   ├── dropdown.blade.php
+│       │   ├── nav-link.blade.php
+│       │   └── responsive-nav-link.blade.php
+│       ├── emails/
+│       │   └── test.blade.php
+│       ├── items/
+│       │   ├── add-stock.blade.php
+│       │   ├── create.blade.php
+│       │   ├── edit.blade.php
+│       │   ├── index.blade.php
+│       │   └── show.blade.php
+│       ├── layouts/
+│       │   ├── app-blade-old.php
+│       │   └── navigation.blade.php
+│       ├── notifications/
+│       │   └── index.blade.php
+│       ├── reports/
+│       │   ├── excel/
+│       │   │   └── monthly.blade.php
+│       │   └── pdf/
+│       │       └── monthly.blade.php
+│       ├── requests/
+│       │   ├── create.blade.php
+│       │   └── index.blade.php
+│       ├── tabs/
+│       │   ├── depletion-rate.blade.php
+│       │   ├── inventory-records.blade.php
+│       │   ├── restock-management.blade.php
+│       │   └── usage-patterns.blade.php
+│       ├── teams/
+│       │   ├── create.blade.php
+│       │   └── index.blade.php
+│       ├── vendor/
+│       │   └── notifications/
+│       │       ├── email.blade.php
+│       │       └── dashboard.blade.php
+│       ├── dashboard.blade.php
+│       ├── test-simple.blade.php
+│       └── welcome.blade.php
+├── routes/
+│   ├── api.php
+│   ├── auth.php
+│   ├── channels.php
+│   ├── console.php
+│   └── web.php
+├── storage/
+├── tests/
+├── vendor/
+├── .editorconfig
+├── .env
+├── .env.example
+├── .gitattributes
+├── .gitignore
+├── artisan
+├── check-user.php
+├── composer.json
+├── composer.lock
+├── email accs
+├── fix-user.php
+├── package-lock.json
+├── package.json
+├── phpunit.xml
+├── project structure
+├── README.md
+├── test-excel.php
+├── test_env.php
+└── vite.config.js

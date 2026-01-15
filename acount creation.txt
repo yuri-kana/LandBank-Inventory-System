@@ -1,0 +1,8 @@
+App\Models\User::create([
+    'name' => 'Landy',
+    'email' => 'landbankinventory@gmail.com',
+    'password' => bcrypt('password123'),
+    'email_verified_at' => now(),
+    'role' => 'admin',
+    'is_active' => true
+]);

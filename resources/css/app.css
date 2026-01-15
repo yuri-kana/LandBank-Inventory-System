@@ -1,0 +1,252 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* ============================================
+   INVENTORY SYSTEM THEME - GREEN/GOLD/WHITE
+   ============================================ */
+
+/* Theme Color Variables */
+:root {
+    /* Primary Colors */
+    --primary-green: #1a5632;
+    --secondary-green: #2e7d32;
+    --light-green: #e8f5e9;
+    --dark-green: #134526;
+    
+    /* Accent Colors */
+    --gold: #d4af37;
+    --light-gold: #fff9e6;
+    --dark-gold: #b8941f;
+    
+    /* Neutral Colors */
+    --white: #ffffff;
+    --light-gray: #f5f7fa;
+    --medium-gray: #e0e0e0;
+    --dark-gray: #333333;
+    --text-dark: #1f2937;
+    --text-light: #6b7280;
+    
+    /* Status Colors */
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+}
+
+/* ============================================
+   TAILWIND EXTENSIONS FOR THEME
+   ============================================ */
+
+/* Background Colors */
+.bg-primary-green { background-color: var(--primary-green); }
+.bg-secondary-green { background-color: var(--secondary-green); }
+.bg-light-green { background-color: var(--light-green); }
+.bg-gold { background-color: var(--gold); }
+.bg-light-gold { background-color: var(--light-gold); }
+
+/* Text Colors */
+.text-primary-green { color: var(--primary-green); }
+.text-secondary-green { color: var(--secondary-green); }
+.text-gold { color: var(--gold); }
+.text-dark-gold { color: var(--dark-gold); }
+
+/* Border Colors */
+.border-primary-green { border-color: var(--primary-green); }
+.border-secondary-green { border-color: var(--secondary-green); }
+.border-gold { border-color: var(--gold); }
+
+/* Button Styles */
+.btn-primary {
+    @apply bg-primary-green text-white font-medium py-2 px-4 rounded-lg 
+           hover:bg-dark-green transition duration-200;
+}
+
+.btn-secondary {
+    @apply bg-gold text-white font-medium py-2 px-4 rounded-lg 
+           hover:bg-dark-gold transition duration-200;
+}
+
+.btn-outline-primary {
+    @apply border border-primary-green text-primary-green font-medium py-2 px-4 rounded-lg 
+           hover:bg-light-green transition duration-200;
+}
+
+/* ============================================
+   CUSTOM COMPONENT STYLES
+   ============================================ */
+
+/* Navigation/Sidebar Styles */
+.sidebar-active {
+    @apply bg-light-green text-primary-green border-r-4 border-gold;
+}
+
+.nav-hover:hover {
+    @apply bg-light-green text-primary-green transition duration-200;
+}
+
+/* Card Styles */
+.theme-card {
+    @apply bg-white rounded-xl shadow-md hover:shadow-lg transition duration-300 
+           border border-gray-200;
+}
+
+.theme-card-header {
+    @apply border-b border-gray-200 pb-3 mb-4;
+}
+
+/* Table Styles */
+.theme-table {
+    @apply min-w-full divide-y divide-gray-200;
+}
+
+.theme-table thead {
+    @apply bg-light-green;
+}
+
+.theme-table th {
+    @apply px-6 py-3 text-left text-xs font-medium text-primary-green uppercase tracking-wider;
+}
+
+.theme-table tbody {
+    @apply bg-white divide-y divide-gray-200;
+}
+
+.theme-table tr:hover {
+    @apply bg-light-green/30;
+}
+
+/* Badge Styles */
+.badge-success {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+           bg-green-100 text-green-800;
+}
+
+.badge-warning {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+           bg-yellow-100 text-yellow-800;
+}
+
+.badge-danger {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+           bg-red-100 text-red-800;
+}
+
+.badge-info {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+           bg-blue-100 text-blue-800;
+}
+
+/* Form Styles */
+.theme-input {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg 
+           focus:ring-2 focus:ring-primary-green focus:border-transparent 
+           focus:outline-none transition duration-200;
+}
+
+.theme-select {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg 
+           focus:ring-2 focus:ring-primary-green focus:border-transparent 
+           focus:outline-none transition duration-200;
+}
+
+/* Stock status styles using theme colors */
+.stock-low {
+    background-color: var(--light-gold) !important;
+    color: var(--dark-gold) !important;
+}
+
+.stock-out {
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+}
+
+.stock-ok {
+    background-color: var(--light-green) !important;
+    color: var(--primary-green) !important;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Gradients */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
+}
+
+.bg-gradient-accent {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--dark-gold) 100%);
+}
+
+/* Shadows */
+.shadow-theme {
+    box-shadow: 0 4px 20px rgba(26, 86, 50, 0.15);
+}
+
+/* Animations */
+.fade-enter-active, .fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter, .fade-leave-to {
+    opacity: 0;
+}
+
+/* Hover effects */
+.hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   DASHBOARD SPECIFIC STYLES
+   ============================================ */
+
+/* Stat Cards */
+.stat-card {
+    @apply theme-card p-6;
+}
+
+.stat-card-primary {
+    @apply stat-card border-l-4 border-primary-green;
+}
+
+.stat-card-accent {
+    @apply stat-card border-l-4 border-gold;
+}
+
+.stat-icon {
+    @apply p-3 rounded-full w-12 h-12 flex items-center justify-center;
+}
+
+.stat-icon-primary {
+    @apply stat-icon bg-light-green text-primary-green;
+}
+
+.stat-icon-accent {
+    @apply stat-icon bg-light-gold text-gold;
+}
+
+/* Chart containers */
+.chart-container {
+    @apply theme-card p-6;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .theme-card {
+        @apply rounded-lg;
+    }
+    
+    .stat-card {
+        @apply p-4;
+    }
+}

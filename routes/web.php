@@ -283,3 +283,25 @@ Route::get('/test-fix-restock', function() {
         return "Error: " . $e->getMessage() . "<br>Trace: " . $e->getTraceAsString();
     }
 });
+
+
+Route::get('/test-db', function() {
+    try {
+        DB::connection()->getPdo();
+        return response()->json([
+            'status' => 'connected',
+            'database' => DB::connection()->getDatabaseName(),
+            'driver' => DB::connection()->getDriverName(),
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'credentials_used' => [
+                'host' => config('database.connections.pgsql.host'),
+                'database' => config('database.connections.pgsql.database'),
+                'username' => config('database.connections.pgsql.username'),
+            ]
+        ], 500);
+    }
+});

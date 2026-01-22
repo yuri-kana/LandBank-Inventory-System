@@ -1,15 +1,25 @@
 services:
   - type: web
-    name: landbank-inventory
-    env: docker
-    dockerfilePath: ./Dockerfile
-    plan: free
+    name: laravel-app
+    env: php
+    buildCommand: "./render-build.sh"
+    startCommand: "php artisan serve --host=0.0.0.0 --port=8000"
     envVars:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: false
       - key: APP_KEY
-        sync: false
-      - key: APP_URL
-        sync: false
+        generateValue: true
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        value: yamanote.proxy.rlwy.net
+      - key: DB_PORT
+        value: "37670"
+      - key: DB_DATABASE
+        value: railway
+      - key: DB_USERNAME
+        value: root
+      - key: DB_PASSWORD
+        value: GWvnFuXf1VFyhKCsSPEHtAMYLzWcFBko

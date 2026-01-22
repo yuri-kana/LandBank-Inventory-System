@@ -139,11 +139,6 @@ class TeamRequestController extends Controller
                         ->withInput();
         }
 
-        $request->validate([
-            'item_id' => 'required|exists:items,id',
-            'quantity_requested' => 'required|integer|min:1|max:1000',
-        ]);
-
         $item = Item::findOrFail($request->item_id);
         
         // Check if item is available

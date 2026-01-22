@@ -305,13 +305,6 @@
                     <td>{{ $team->name ?? $team['name'] ?? 'N/A' }}</td>
                     <td class="text-right">{{ number_format($team->members_count ?? $team['members_count'] ?? 0) }}</td>
                     <td class="text-right">{{ number_format($team->request_count ?? $team['request_count'] ?? 0) }}</td>
-                    <td class="text-right">
-                        @php
-                            $teamRequestCount = $team->request_count ?? $team['request_count'] ?? 0;
-                            $percentage = $maxRequests > 0 ? ($teamRequestCount / $maxRequests) * 100 : 0;
-                        @endphp
-                        {{ number_format($percentage, 1) }}%
-                    </td>
                 </tr>
                 @empty
                 <tr>

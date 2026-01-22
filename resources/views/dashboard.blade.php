@@ -28,7 +28,6 @@
                                     <p class="text-gray-600">Comprehensive insights and management tools</p>
                                 </div>
                             </div>
-                            
                         </div>
                     </div>
                 </div>
@@ -292,15 +291,15 @@
                                             </p>
                                         </div>
                                         @if($request->status === 'approved')
-                                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
                                                 Approved
                                             </span>
                                         @elseif($request->status === 'rejected')
-                                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
                                                 Declined
                                             </span>
                                         @else
-                                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
                                                 Pending
                                             </span>
                                         @endif
@@ -318,8 +317,8 @@
                         </div>
                     </div>
 
-                    <!-- Available Inventory - UPDATED TO SHOW ALL ITEMS -->
-                    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                    <!-- Available Inventory - ENHANCED DESIGN -->
+                    <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
                         <div class="p-6 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between">
                             <h3 class="text-lg font-semibold text-gray-900 mb-2 sm:mb-0">Available Inventory</h3>
                             <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
@@ -334,7 +333,7 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Scrollable Inventory Section - SHOW ALL AVAILABLE ITEMS -->
+                        <!-- Scrollable Inventory Section -->
                         <div class="max-h-[500px] overflow-y-auto divide-y divide-gray-100" id="inventory-scroll-container">
                             @php
                                 // Get all available items (not just recent)
@@ -345,50 +344,146 @@
                             @endphp
                             
                             @forelse($availableItems as $item)
-                                <div class="p-4 hover:bg-gray-50 transition duration-150 inventory-item">
-                                    <div class="flex justify-between items-center">
-                                        <div>
-                                            <p class="font-medium text-gray-900">{{ $item->name }}</p>
-                                            <p class="text-sm text-gray-500 mt-1">Available: {{ $item->quantity }} units</p>
-                                            @if($item->minimum_stock > 0)
-                                                <p class="text-xs text-gray-400 mt-1">Min. Stock: {{ $item->minimum_stock }}</p>
+                                <div class="p-4 hover:bg-gray-50 transition duration-150 inventory-item border-l-4 
+                                    @if($item->quantity <= 0)
+                                        border-red-300 bg-red-50/30
+                                    @elseif($item->quantity <= $item->minimum_stock)
+                                        border-yellow-300 bg-yellow-50/30
+                                    @elseif($item->quantity <= $item->minimum_stock * 2)
+                                        border-blue-300 bg-blue-50/30
+                                    @else
+                                        border-emerald-300 bg-emerald-50/30
+                                    @endif">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1">
+                                            <div class="flex items-center mb-1">
+                                                <p class="font-medium text-gray-900">{{ $item->name }}</p>
+                                                @if($item->category)
+                                                    <span class="ml-2 px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
+                                                        {{ $item->category }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            
+                                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-box text-gray-400 text-sm mr-2"></i>
+                                                    <span class="text-sm font-medium text-gray-700">Available:</span>
+                                                    <span class="ml-2 text-sm font-semibold 
+                                                        @if($item->quantity <= 0)
+                                                            text-red-600
+                                                        @elseif($item->quantity <= $item->minimum_stock)
+                                                            text-yellow-600
+                                                        @else
+                                                            text-emerald-600
+                                                        @endif">
+                                                        {{ $item->quantity }} units
+                                                    </span>
+                                                </div>
+                                                
+                                                @if($item->minimum_stock > 0)
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-exclamation-triangle text-gray-400 text-sm mr-2"></i>
+                                                    <span class="text-sm text-gray-600">Min. Stock:</span>
+                                                    <span class="ml-2 text-sm font-medium text-gray-700">{{ $item->minimum_stock }}</span>
+                                                </div>
+                                                @endif
+                                                
+                                                @if($item->reorder_point > 0)
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-flag text-gray-400 text-sm mr-2"></i>
+                                                    <span class="text-sm text-gray-600">Reorder At:</span>
+                                                    <span class="ml-2 text-sm font-medium text-gray-700">{{ $item->reorder_point }}</span>
+                                                </div>
+                                                @endif
+                                            </div>
+                                            
+                                            @if($item->location)
+                                                <div class="flex items-center mt-2">
+                                                    <i class="fas fa-map-marker-alt text-gray-400 text-xs mr-2"></i>
+                                                    <span class="text-xs text-gray-500">{{ $item->location }}</span>
+                                                </div>
                                             @endif
                                         </div>
-                                        @if($item->quantity <= 0)
-                                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                Out of Stock
-                                            </span>
-                                        @elseif($item->quantity <= $item->minimum_stock)
-                                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                Low Stock
-                                            </span>
-                                        @else
-                                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                                                Available
-                                            </span>
-                                        @endif
+                                        
+                                        <div class="ml-4 flex flex-col items-end">
+                                            @if($item->quantity <= 0)
+                                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
+                                                    <i class="fas fa-times-circle mr-1"></i> Out of Stock
+                                                </span>
+                                            @elseif($item->quantity <= $item->minimum_stock)
+                                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                                    <i class="fas fa-exclamation-triangle mr-1"></i> Low Stock
+                                                </span>
+                                            @elseif($item->quantity <= $item->minimum_stock * 2)
+                                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                                    <i class="fas fa-check-circle mr-1"></i> Good
+                                                </span>
+                                            @else
+                                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                    <i class="fas fa-check-circle mr-1"></i> Available
+                                                </span>
+                                            @endif
+                                            
+                                            <!-- Stock Level Indicator -->
+                                            <div class="mt-2 w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                <div class="h-full rounded-full
+                                                    @if($item->quantity <= 0)
+                                                        bg-red-500
+                                                    @elseif($item->quantity <= $item->minimum_stock)
+                                                        bg-yellow-500
+                                                    @elseif($item->quantity <= $item->minimum_stock * 2)
+                                                        bg-blue-500
+                                                    @else
+                                                        bg-emerald-500
+                                                    @endif"
+                                                    style="width: {{ min(100, ($item->quantity / max($item->maximum_stock ?? $item->minimum_stock * 5, 1)) * 100) }}%">
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
+                                    
                                     @if($item->quantity > 0)
-                                        <div class="mt-3">
+                                        <div class="mt-3 flex justify-between items-center">
                                             <a href="{{ route('requests.create') }}?item_id={{ $item->id }}" 
-                                               class="text-sm bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg transition duration-200 inline-flex items-center">
-                                                <i class="fas fa-cart-plus mr-1"></i> Request This Item
+                                               class="text-sm bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition duration-200 inline-flex items-center shadow-sm hover:shadow">
+                                                <i class="fas fa-cart-plus mr-2"></i> Request Item
                                             </a>
+                                            
+                                            @if(auth()->check() && auth()->user()->isAdmin())
+                                                <div class="text-xs text-gray-500">
+                                                    Last restocked: {{ $item->updated_at->diffForHumans() }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <div class="mt-3">
+                                            <button disabled
+                                                   class="text-sm bg-gray-100 text-gray-400 px-4 py-2 rounded-lg inline-flex items-center cursor-not-allowed">
+                                                <i class="fas fa-ban mr-2"></i> Out of Stock
+                                            </button>
                                         </div>
                                     @endif
                                 </div>
                             @empty
-                                <div class="p-6 text-center text-gray-500">
-                                    <i class="fas fa-boxes text-2xl text-gray-300 mb-2"></i>
-                                    <p>No items available in inventory</p>
+                                <div class="p-8 text-center text-gray-500">
+                                    <div class="inline-block p-4 rounded-full bg-gray-100 mb-4">
+                                        <i class="fas fa-boxes text-3xl text-gray-300"></i>
+                                    </div>
+                                    <p class="text-lg font-medium text-gray-400">No items available in inventory</p>
+                                    <p class="text-sm text-gray-400 mt-1">Check back later or contact your administrator</p>
                                 </div>
                             @endforelse
                             
                             <!-- Scroll indicator for many items -->
                             @if($availableItemsCount > 8)
-                                <div class="p-4 text-center text-gray-400 text-sm border-t border-gray-100 bg-gray-50 sticky bottom-0">
-                                    <i class="fas fa-chevron-down mr-1 animate-bounce"></i>
+                                <div class="p-4 text-center text-gray-400 text-sm border-t border-gray-100 bg-gray-50 sticky bottom-0 backdrop-blur-sm">
+                                    <i class="fas fa-chevron-down mr-1 animate-bounce text-blue-500"></i>
                                     Scroll to see more items ({{ $availableItemsCount }} total)
+                                    <div class="text-xs text-gray-400 mt-1">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Color coding indicates stock levels
+                                    </div>
                                 </div>
                             @endif
                         </div>
@@ -447,6 +542,16 @@
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* Inventory item color coding */
+.border-red-300 { border-color: #fca5a5; }
+.bg-red-50\/30 { background-color: rgba(254, 242, 242, 0.3); }
+.border-yellow-300 { border-color: #fcd34d; }
+.bg-yellow-50\/30 { background-color: rgba(254, 252, 232, 0.3); }
+.border-blue-300 { border-color: #93c5fd; }
+.bg-blue-50\/30 { background-color: rgba(239, 246, 255, 0.3); }
+.border-emerald-300 { border-color: #6ee7b7; }
+.bg-emerald-50\/30 { background-color: rgba(236, 253, 245, 0.3); }
 </style>
 
 <!-- JavaScript Section -->

@@ -27,6 +27,9 @@ class ItemController extends Controller
         $query->where('name', 'like', '%' . $searchTerm . '%');
     }
     
+    // ADD SORTING HERE - Order by name alphabetically
+    $query->orderBy('name', 'asc');
+    
     // Get all items with their calculated available stock
     $items = $query->withCount(['pendingRequests as pending_quantity_sum' => function($query) {
         $query->select(DB::raw('COALESCE(SUM(quantity_requested), 0)'));

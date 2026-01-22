@@ -81,89 +81,6 @@
                 </div>
             @endif
 
-            <!-- Confirmation Modal -->
-            <div id="confirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
-                <div class="relative top-20 mx-auto p-6 border w-full max-w-md shadow-xl rounded-lg bg-white">
-                    <!-- Modal Header -->
-                    <div class="mb-5">
-                        <div class="flex items-center gap-3 mb-3">
-                            <div class="flex-shrink-0">
-                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-800">Confirm Request</h3>
-                                <p class="text-sm text-gray-600">Inventory System</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Message Box -->
-                        <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-5">
-                            <p class="text-sm font-medium text-gray-700" id="modalMessage"></p>
-                        </div>
-                    </div>
-                    
-                    <!-- Available Quantity Section -->
-                    <div class="mb-5">
-                        <div class="flex items-center justify-between mb-3">
-                            <label class="text-sm font-medium text-gray-700">Available:</label>
-                            <span class="text-sm font-semibold text-green-600" id="modalAvailableQuantity">0 units</span>
-                        </div>
-                        <div class="text-xs text-gray-500 mb-2">Maximum quantity you can request:</div>
-                        <div class="text-lg font-bold text-blue-600" id="modalMaxQuantityDisplay">0 units</div>
-                    </div>
-                    
-                    <!-- Request Summary -->
-                    <div class="mb-5">
-                        <h4 class="font-semibold text-gray-800 mb-3 text-sm">Request Summary</h4>
-                        <div class="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
-                            <table class="w-full">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Item Selected</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Quantity Requested</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr class="border-t border-gray-200">
-                                        <td class="px-4 py-3 text-sm text-gray-800" id="modalSummaryItem">-</td>
-                                        <td class="px-4 py-3 text-sm font-medium text-blue-600" id="modalSummaryQuantity">-</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div class="border-t border-gray-200">
-                                <div class="grid grid-cols-2 divide-x divide-gray-200">
-                                    <div class="p-3">
-                                        <p class="text-xs text-gray-600 mb-1">Availability</p>
-                                        <p class="text-sm font-medium text-green-600" id="modalSummaryAvailable">-</p>
-                                    </div>
-                                    <div class="p-3">
-                                        <p class="text-xs text-gray-600 mb-1">Remaining After Request</p>
-                                        <p class="text-sm font-medium" id="modalSummaryRemaining">-</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Modal Footer -->
-                    <div class="flex justify-end gap-3 pt-5 border-t border-gray-200">
-                        <button onclick="closeModal()" 
-                                class="px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300">
-                            Cancel
-                        </button>
-                        <button onclick="submitForm()" 
-                                id="confirmSubmitBtn"
-                                class="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            Submit Request
-                        </button>
-                    </div>
-                </div>
-            </div>
-
             <!-- Main Form Card -->
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-2xl">
                 <div class="p-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
@@ -351,9 +268,8 @@
                                     Cancel
                                 </a>
                                 <button
-                                    type="button"
+                                    type="submit"
                                     id="submitBtn"
-                                    onclick="showConfirmationModal()"
                                     class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -424,17 +340,6 @@
     const summaryQuantity = document.getElementById('summary-quantity');
     const summaryAvailability = document.getElementById('summary-availability');
     const summaryRemaining = document.getElementById('summary-remaining');
-    
-    // Modal elements
-    const confirmationModal = document.getElementById('confirmationModal');
-    const modalMessage = document.getElementById('modalMessage');
-    const modalAvailableQuantity = document.getElementById('modalAvailableQuantity');
-    const modalMaxQuantityDisplay = document.getElementById('modalMaxQuantityDisplay');
-    const modalSummaryItem = document.getElementById('modalSummaryItem');
-    const modalSummaryQuantity = document.getElementById('modalSummaryQuantity');
-    const modalSummaryAvailable = document.getElementById('modalSummaryAvailable');
-    const modalSummaryRemaining = document.getElementById('modalSummaryRemaining');
-    const confirmSubmitBtn = document.getElementById('confirmSubmitBtn');
     
     let selectedItemName = '';
     let availableQuantityGlobal = 0;
@@ -583,14 +488,6 @@
             return false;
         }
         
-        // Validate if requested quantity is within reasonable limits
-        if (requestedQuantity > 1000) {
-            showError('Maximum limit exceeded', 'Maximum quantity per request is 1000 units');
-            quantityInput.classList.add('border-red-500');
-            submitBtn.disabled = true;
-            return false;
-        }
-        
         // Success state
         quantityErrorDisplay.classList.add('hidden');
         quantityInput.classList.remove('border-red-500');
@@ -605,49 +502,6 @@
         errorText.textContent = title;
         errorDetails.textContent = details;
         quantityErrorDisplay.classList.remove('hidden');
-    }
-    
-    // Function to show confirmation modal
-    function showConfirmationModal() {
-        if (!validateQuantity()) {
-            return;
-        }
-        
-        const selectedOption = itemSelect.options[itemSelect.selectedIndex];
-        const requestedQuantity = parseInt(quantityInput.value) || 0;
-        const remaining = availableQuantityGlobal - requestedQuantity;
-        
-        // Update modal content
-        modalMessage.textContent = `Confirm request for ${requestedQuantity} units of ${selectedItemName}?`;
-        modalAvailableQuantity.textContent = `${availableQuantityGlobal} units`;
-        modalMaxQuantityDisplay.textContent = `${availableQuantityGlobal} units`;
-        
-        // Update summary
-        modalSummaryItem.textContent = selectedItemName;
-        modalSummaryQuantity.textContent = `${requestedQuantity} units`;
-        modalSummaryAvailable.textContent = `${availableQuantityGlobal} units available`;
-        modalSummaryRemaining.textContent = remaining > 0 ? `${remaining} units` : '0 units';
-        modalSummaryRemaining.className = remaining > 0 ? 'text-sm font-medium text-green-600' : 'text-sm font-medium text-amber-600';
-        
-        // Show modal
-        confirmationModal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
-    
-    // Function to close modal
-    function closeModal() {
-        confirmationModal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
-    
-    // Function to submit form
-    function submitForm() {
-        // Disable confirm button to prevent double submission
-        confirmSubmitBtn.disabled = true;
-        confirmSubmitBtn.innerHTML = 'Submitting...';
-        
-        // Submit the form
-        form.submit();
     }
     
     // Event Listeners
@@ -684,18 +538,17 @@
         }
     });
     
-    // Close modal when clicking outside
-    confirmationModal.addEventListener('click', function(e) {
-        if (e.target === confirmationModal) {
-            closeModal();
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        if (!validateQuantity()) {
+            e.preventDefault();
+            return false;
         }
-    });
-    
-    // Close modal with Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && !confirmationModal.classList.contains('hidden')) {
-            closeModal();
-        }
+        
+        // Disable submit button to prevent double submission
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Submitting...';
+        return true;
     });
     
     // Initialize on page load

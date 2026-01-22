@@ -1,4 +1,4 @@
-project structure
+project structure 
 
 INVENTORY-SYSTEM/
 ├── app/
@@ -6,11 +6,16 @@ INVENTORY-SYSTEM/
 │   │   ├── Commands/
 │   │   │   ├── CheckDatabaseSchema.php
 │   │   │   ├── CreateAdminUser.php
+│   │   │   ├── FixClaimedItems.php
+│   │   │   ├── FixMonthlyReportsData.php
 │   │   │   ├── FixNotifications.php
+│   │   │   ├── FixStockCalculations.php
 │   │   │   ├── GenerateMissingReports.php
 │   │   │   ├── GenerateMonthlyReport.php
+│   │   │   ├── RecalculateMonthlyReports.php
 │   │   │   ├── ResetAdminPassword.php
 │   │   │   ├── SendVerificationEmail.php
+│   │   │   ├── SyncMonthlyReports.php
 │   │   │   ├── TestCommand.php
 │   │   │   ├── TestGmail.php
 │   │   │   ├── UpdateBeginningStock.php
@@ -19,9 +24,7 @@ INVENTORY-SYSTEM/
 │   ├── Exceptions/
 │   │   └── Handler.php
 │   ├── Exports/
-│   │   ├── InventoryExport.php
-│   │   ├── MonthlyReportExcelExport.php
-│   │   └── SimpleInventoryExport.php
+│   │   └── InventoryExport.php
 │   ├── Http/
 │   │   ├── Controllers/
 │   │   │   ├── Auth/
@@ -113,40 +116,48 @@ INVENTORY-SYSTEM/
 │   ├── factories/
 │   │   └── UserFactory.php
 │   ├── migrations/
-│   │   ├── 2014_10_12_000000_create_users_table.php
-│   │   ├── 2014_10_12_100000_create_password_reset_tokens_table.php
-│   │   ├── 2019_08_19_000000_create_failed_jobs_table.php
-│   │   ├── 2019_12_14_000001_create_personal_access_tokens_table.php
-│   │   ├── 2025_12_04_105651_create_teams_table.php
-│   │   ├── 2025_12_04_105652_add_role_and_team_to_users_table.php
-│   │   ├── 2025_12_04_105652_create_items_table.php
-│   │   ├── 2025_12_04_105652_create_team_requests_table.php
-│   │   ├── 2025_12_08_140950_create_notifications_table.php
-│   │   ├── 2025_12_08_160740_update_notifications_table.php
-│   │   ├── 2025_12_08_160816_recreate_notifications_table.php
-│   │   ├── 2025_12_09_022305_add_is_read_to_notifications_table.php
-│   │   ├── 2025_12_09_022427_convert_to_laravel_notifications.php
-│   │   ├── 2025_12_09_035348_add_email_verification_to_users_table.php
-│   │   ├── 2025_12_09_063134_add_is_active_to_users_table.php
-│   │   ├── 2025_12_09_075214_add_is_read_to_notifications_table.php
-│   │   ├── 2025_12_10_012620_update_existing_user_names.php
-│   │   ├── 2025_12_10_084259_add_password_security_fields_to_users_table.php
-│   │   ├── 2025_12_14_160419_add_is_available_to_items_table.php
-│   │   ├── 2025_12_15_020511_ensure_notifications_schema_consistency.php
-│   │   ├── 2025_12_15_052142_add_password_reset_fields_to_users_table.php
-│   │   ├── 2025_12_16_012118_add_stock_columns_to_items_table.php
-│   │   ├── 2025_12_16_051105_add_profile_photo_path_to_users_table.php
-│   │   ├── 2025_12_16_074904_add_claimed_by_to_team_requests_table.php
-│   │   ├── 2025_12_19_062452_create_inventory_logs_table.php
-│   │   ├── 2025_12_22_015517_create_monthly_reports_table.php
-│   │   ├── 2025_12_22_073233_add_missing_fields_to_monthly_reports_table.php
-│   │   └── 2025_12_23_004830_fix_notifications_table_schema.php
+|   │   ├── 2014_10_12_000000_create_users_table.php
+|   │   ├── 2014_10_12_100000_create_password_reset_tokens_table.php
+|   │   ├── 2019_08_19_000000_create_failed_jobs_table.php
+|   │   ├── 2019_12_14_000001_create_personal_access_tokens_table.php
+|   │   ├── 2025_12_04_105651_create_teams_table.php
+|   │   ├── 2025_12_04_105652_add_role_and_team_to_users_table.php
+|   │   ├── 2025_12_04_105652_create_items_table.php
+|   │   ├── 2025_12_04_105652_create_team_requests_table.php
+|   │   ├── 2025_12_08_140950_create_notifications_table.php
+|   │   ├── 2025_12_08_160740_update_notifications_table.php
+|   │   ├── 2025_12_08_160816_recreate_notifications_table.php
+|   │   ├── 2025_12_09_022305_add_is_read_to_notifications_table.php
+|   │   ├── 2025_12_09_022427_convert_to_laravel_notifications.php
+|   │   ├── 2025_12_09_035348_add_email_verification_to_users_table.php
+|   │   ├── 2025_12_09_063134_add_is_active_to_users_table.php
+|   │   ├── 2025_12_09_075214_add_is_read_to_notifications_table.php
+|   │   ├── 2025_12_10_012620_update_existing_user_names.php
+|   │   ├── 2025_12_10_084259_add_password_security_fields_to_users_table.php
+|   │   ├── 2025_12_14_160419_add_is_available_to_items_table.php
+|   │   ├── 2025_12_15_020511_ensure_notifications_schema_consistency.php
+|   │   ├── 2025_12_15_052142_add_password_reset_fields_to_users_table.php
+|   │   ├── 2025_12_16_012118_add_stock_columns_to_items_table.php
+|   │   ├── 2025_12_16_051105_add_profile_photo_path_to_users_table.php
+|   │   ├── 2025_12_16_074904_add_claimed_by_to_team_requests_table.php
+|   │   ├── 2025_12_19_062452_create_inventory_logs_table.php
+|   │   ├── 2025_12_22_015517_create_monthly_reports_table.php
+|   │   ├── 2025_12_22_073233_add_missing_fields_to_monthly_reports_table.php
+|   │   ├── 2025_12_23_004830_fix_notifications_table_schema.php
+|   │   ├── 2026_01_06_103054_add_claimed_status_to_team_requests.php
+|   │   ├── 2026_01_06_160047_fix_duplicate_stock_columns.php
+|   │   ├── 2026_01_06_160249_add_missing_stock_columns_to_items_table.php
+|   │   ├── 2026_01_07_081849_add_profile_photo_path_to_users_table.php
+|   │   ├── 2026_01_08_083945_add_claimed_items_count_to_monthly_reports_table.php
+|   │   ├── 2026_01_08_091351_remove_30day_fields_from_items_table.php
+|   │   ├── 2026_01_08_091529_safe_remove_30day_fields_from_items_table.php
+|   │   └── 2026_01_08_091908_fix_team_requests_status_column.php
 │   └── seeders/
 │       ├── DatabaseSeeder.php
 │       ├── MonthlyReportSeeder.php
+│       ├── ProductionSeeder.php
 │       ├── TeamsTableSeeder.php
 │       └── UsersTableSeeder.php
-├── node_modules/
 ├── public/
 │   ├── storage/
 │   │   └── profile-photos/
@@ -155,67 +166,64 @@ INVENTORY-SYSTEM/
 │   ├── index.php
 │   └── robots.txt
 ├── resources/
-│   ├── css/
-│   ├── js/
-│   └── views/
-│       ├── auth/
-│       │   ├── force-password-change.blade.php
-│       │   ├── forgot-password.blade.php
-│       │   ├── login.blade.php
-│       │   ├── profile-settings.blade.php
-│       │   ├── reset-password.blade.php
-│       │   ├── verify-email.blade.php
-│       │   └── verify-success.blade.php
-│       ├── components/
-│       │   ├── analytics/
-│       │   │   └── inventory-records.blade.php
-│       │   ├── modals/
-│       │   │   ├── report-not-generated.blade.php
-│       │   │   ├── restock-confirmation.blade.php
-│       │   │   └── start-restocking.blade.php
-│       │   ├── alert.blade.php
-│       │   ├── analytics-modal.blade.php
-│       │   ├── app-layout.blade.php
-│       │   ├── dropdown-link.blade.php
-│       │   ├── dropdown.blade.php
-│       │   ├── nav-link.blade.php
-│       │   └── responsive-nav-link.blade.php
-│       ├── emails/
-│       │   └── test.blade.php
-│       ├── items/
-│       │   ├── add-stock.blade.php
-│       │   ├── create.blade.php
-│       │   ├── edit.blade.php
-│       │   ├── index.blade.php
-│       │   └── show.blade.php
-│       ├── layouts/
-│       │   ├── app-blade-old.php
-│       │   └── navigation.blade.php
-│       ├── notifications/
-│       │   └── index.blade.php
-│       ├── reports/
-│       │   ├── excel/
-│       │   │   └── monthly.blade.php
-│       │   └── pdf/
-│       │       └── monthly.blade.php
-│       ├── requests/
-│       │   ├── create.blade.php
-│       │   └── index.blade.php
-│       ├── tabs/
-│       │   ├── depletion-rate.blade.php
-│       │   ├── inventory-records.blade.php
-│       │   ├── restock-management.blade.php
-│       │   └── usage-patterns.blade.php
-│       ├── teams/
-│       │   ├── create.blade.php
-│       │   └── index.blade.php
-│       ├── vendor/
-│       │   └── notifications/
-│       │       ├── email.blade.php
-│       │       └── dashboard.blade.php
-│       ├── dashboard.blade.php
-│       ├── test-simple.blade.php
-│       └── welcome.blade.php
+│   ├── views/
+│   │   ├── auth/
+│   │   │   ├── force-password-change.blade.php
+│   │   │   ├── forgot-password.blade.php
+│   │   │   ├── login.blade.php
+│   │   │   ├── profile-settings.blade.php
+│   │   │   ├── reset-password.blade.php
+│   │   │   ├── verify-email.blade.php
+│   │   │   └── verify-success.blade.php
+│   │   ├── components/
+│   │   │   ├── modals/
+│   │   │   │   ├── report-not-generated.blade.php
+│   │   │   │   ├── restock-confirmation.blade.php
+│   │   │   │   ├── start-restocking.blade.php
+│   │   │   │   └── analytics-modal.blade.php
+│   │   │   ├── alert.blade.php
+│   │   │   ├── app-layout.blade.php
+│   │   │   ├── dropdown-link.blade.php
+│   │   │   ├── dropdown.blade.php
+│   │   │   ├── nav-link.blade.php
+│   │   │   └── responsive-nav-link.blade.php
+│   │   ├── emails/
+│   │   │   └── test.blade.php
+│   │   ├── items/
+│   │   │   ├── create.blade.php
+│   │   │   ├── edit.blade.php
+│   │   │   ├── index.blade.php
+│   │   │   └── show.blade.php
+│   │   ├── layouts/
+│   │   │   ├── app-blade-old.php
+│   │   │   └── navigation.blade.php
+│   │   ├── livewire/
+│   │   │   └── dashboard-tabs.blade.php
+│   │   ├── notifications/
+│   │   │   └── index.blade.php
+│   │   ├── reports/
+│   │   │   ├── excel/
+│   │   │   │   └── monthly.blade.php
+│   │   │   └── pdf/
+│   │   │       └── monthly.blade.php
+│   │   ├── requests/
+│   │   │   ├── create.blade.php
+│   │   │   └── index.blade.php
+│   │   ├── tabs/
+│   │   │   ├── depletion-rate.blade.php
+│   │   │   ├── inventory-records.blade.php
+│   │   │   ├── restock-management.blade.php
+│   │   │   └── usage-patterns.blade.php
+│   │   ├── teams/
+│   │   │   ├── create.blade.php
+│   │   │   └── index.blade.php
+│   │   ├── vendor/
+│   │   │   └── notifications/
+│   │   │       ├── email.blade.php
+│   │   │       └── dashboard.blade.php
+│   │   ├── dashboard.blade.php
+│   │   ├── welcome.blade.php
+│   │   └── test-simple.blade.php
 ├── routes/
 │   ├── api.php
 │   ├── auth.php
@@ -223,24 +231,37 @@ INVENTORY-SYSTEM/
 │   ├── console.php
 │   └── web.php
 ├── storage/
+│   ├── app/
+│   │   └── public/
+│   │       └── profile-photos/
+│   ├── framework/
+│   ├── logs/
+│   │   └── laravel.log
+│   └── notifications_backup.json
 ├── tests/
+│   ├── Feature/
+│   └── Unit/
 ├── vendor/
 ├── .editorconfig
 ├── .env
 ├── .env.example
 ├── .gitattributes
 ├── .gitignore
+├── acount creation.txt
 ├── artisan
 ├── check-user.php
 ├── composer.json
 ├── composer.lock
+├── Dockerfile
 ├── email accs
 ├── fix-user.php
+├── import-data.php
 ├── package-lock.json
 ├── package.json
 ├── phpunit.xml
 ├── project structure
 ├── README.md
-├── test-excel.php
+├── render.yaml
 ├── test_env.php
+├── test-excel.php
 └── vite.config.js

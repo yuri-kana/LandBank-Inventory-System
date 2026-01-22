@@ -21,50 +21,105 @@
             
             <!-- Year Filter Dropdown -->
             <div class="flex items-center space-x-3">
-                <div class="relative">
-                    <form method="GET" action="{{ route('dashboard', ['tab' => 'inventory-records']) }}" id="year-filter-form" class="flex items-center">
-                        <label for="year-select" class="mr-2 text-sm font-medium text-gray-700">
-                            <i class="fas fa-filter mr-1"></i> Filter by Year:
-                        </label>
-                        <div class="relative">
-                            <select id="year-select" name="year" 
-                                    onchange="this.form.submit()"
-                                    class="appearance-none bg-white border border-gray-300 rounded-lg py-2 pl-3 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                @foreach($availableYears as $year)
-                                    <option value="{{ $year }}" {{ $year == $selectedYear ? 'selected' : '' }}>
-                                        {{ $year === 'all' ? 'All Time' : $year }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <i class="fas fa-chevron-down text-xs"></i>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                
-                <!-- Year Navigation Buttons -->
-                <div class="flex items-center space-x-2">
-                    <button onclick="navigateYear('prev')" 
-                            class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Previous Year">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button onclick="navigateYear('next')" 
-                            class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Next Year"
-                            {{ $selectedYear >= date('Y') || $selectedYear === 'all' ? 'disabled' : '' }}>
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
+    <div class="relative">
+        <form method="GET" action="{{ route('dashboard', ['tab' => 'inventory-records']) }}" id="year-filter-form" class="flex items-center">
+            <label for="year-select" class="mr-2 text-sm font-medium text-gray-700">
+                <i class="fas fa-filter mr-1"></i> Filter by Year:
+            </label>
+            <div class="relative">
+                <select id="year-select" name="year" 
+                        onchange="this.form.submit()"
+                        class="appearance-none bg-white border border-gray-300 rounded-lg py-2 pl-3 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    @php
+                        $currentYear = date('Y');
+                        $currentMonth = date('n'); // Current month (1-12)
+                        
+                        // Remove 'all' from available years
+                        $availableYears = array_filter($availableYears, function($year) {
+                            return $year !== 'all';
+                        });
+                        // Ensure all are numeric and unique
+                        $availableYears = array_unique(array_filter($availableYears, 'is_numeric'));
+                        
+                        // Always include next year (2027)
+                        $nextYear = $currentYear + 1;
+                        if (!in_array($nextYear, $availableYears)) {
+                            $availableYears[] = $nextYear;
+                        }
+                        
+                        // Check if current year is finished (after December)
+                        $isCurrentYearFinished = $currentMonth == 12 && date('j') == 31; // December 31st
+                        // Or you can check if we're in January of next year
+                        $isNextYearStarted = $currentMonth == 1 && $currentYear == $nextYear - 1;
+                        
+                        // Sort in descending order (newest first)
+                        rsort($availableYears);
+                    @endphp
+                    
+                    @foreach($availableYears as $year)
+                        @if($year < $currentYear)
+                            <!-- Past years - always selectable -->
+                            <option value="{{ $year }}" {{ $year == $selectedYear ? 'selected' : '' }}>
+                                {{ $year }}
+                            </option>
+                        @elseif($year == $currentYear)
+                            <!-- Current year - always selectable -->
+                            <option value="{{ $year }}" {{ $year == $selectedYear ? 'selected' : '' }}>
+                                {{ $year }} (Current)
+                            </option>
+                        @elseif($year == $nextYear)
+                            <!-- Next year (2027) - conditionally disabled -->
+                            @if($isCurrentYearFinished || $isNextYearStarted)
+                                <!-- Current year is finished, next year becomes selectable -->
+                                <option value="{{ $year }}" {{ $year == $selectedYear ? 'selected' : '' }}>
+                                    {{ $year }}
+                                </option>
+                            @else
+                                <!-- Current year not finished yet, next year is disabled -->
+                                <option value="{{ $year }}" disabled class="text-gray-400 bg-gray-100">
+                                    {{ $year }} (Available Jan 1, {{ $nextYear }})
+                                </option>
+                            @endif
+                        @elseif($year > $nextYear)
+                            <!-- Future years beyond next year - always disabled -->
+                            @php
+                                $yearsAway = $year - $currentYear;
+                            @endphp
+                            <option value="{{ $year }}" disabled class="text-gray-400 bg-gray-100">
+                                {{ $year }} (Available in {{ $yearsAway }} year{{ $yearsAway > 1 ? 's' : '' }})
+                            </option>
+                        @endif
+                    @endforeach
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <i class="fas fa-chevron-down text-xs"></i>
                 </div>
             </div>
+        </form>
+    </div>
+    
+    <!-- Year Navigation Buttons -->
+    <div class="flex items-center space-x-2">
+        <button onclick="navigateYear('prev')" 
+                class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                title="Previous Year">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button onclick="navigateYear('next')" 
+                class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                title="Next Year"
+                {{ $selectedYear >= date('Y') ? 'disabled' : '' }}>
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+</div>
         </div>
     </div>
 
     <!-- Stats Cards Row -->
     <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white rounded-lg p-4 border border-gray-200">
+        <div class="grid grid-cols-3 gap-4 justify-items-center">
+            <div class="bg-white rounded-lg p-4 border border-gray-200 w-full max-w-xs">
                 <div class="flex items-center">
                     <div class="p-2 rounded-lg bg-blue-100 text-blue-600 mr-3">
                         <i class="fas fa-hand-paper"></i>
@@ -76,7 +131,7 @@
                 </div>
             </div>
             
-            <div class="bg-white rounded-lg p-4 border border-gray-200">
+            <div class="bg-white rounded-lg p-4 border border-gray-200 w-full max-w-xs">
                 <div class="flex items-center">
                     <div class="p-2 rounded-lg bg-green-100 text-green-600 mr-3">
                         <i class="fas fa-box-open"></i>
@@ -90,7 +145,7 @@
                 </div>
             </div>
             
-            <div class="bg-white rounded-lg p-4 border border-gray-200">
+            <div class="bg-white rounded-lg p-4 border border-gray-200 w-full max-w-xs">
                 <div class="flex items-center">
                     <div class="p-2 rounded-lg bg-purple-100 text-purple-600 mr-3">
                         <i class="fas fa-check-circle"></i>
@@ -106,57 +161,45 @@
                     </div>
                 </div>
             </div>
-            
-            <div class="bg-white rounded-lg p-4 border border-gray-200">
-                <div class="flex items-center">
-                    <div class="p-2 rounded-lg bg-emerald-100 text-emerald-600 mr-3">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Avg. Activity</p>
-                        <p class="text-xl font-semibold text-gray-900">{{ $averageActivity }}</p>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
-    <!-- Enhanced Table Section -->
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
+    <!-- Enhanced Table Section - REMOVED SCROLL -->
+    <div class="w-full">
+        <table class="w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                         <div class="flex items-center">
                             <span>Month</span>
                             <i class="fas fa-sort ml-1 text-gray-400 cursor-pointer hover:text-gray-600"></i>
                         </div>
                     </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                         <div class="flex items-center">
                             <span>Total Requests</span>
                             <i class="fas fa-sort ml-1 text-gray-400 cursor-pointer hover:text-gray-600"></i>
                         </div>
                     </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                         <div class="flex items-center">
                             <span>Items Restocked</span>
                             <i class="fas fa-sort ml-1 text-gray-400 cursor-pointer hover:text-gray-600"></i>
                         </div>
                     </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                         <div class="flex items-center">
                             <span>Items Claimed</span>
                             <i class="fas fa-sort ml-1 text-gray-400 cursor-pointer hover:text-gray-600"></i>
                         </div>
                     </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                         <div class="flex items-center">
                             <span>Status</span>
                             <i class="fas fa-sort ml-1 text-gray-400 cursor-pointer hover:text-gray-600"></i>
                         </div>
                     </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                         Actions
                     </th>
                 </tr>
@@ -193,7 +236,7 @@
                     $showFinalizeButton = $hasMonthEnded && !$isFinalized;
                 @endphp
                 <tr class="hover:bg-blue-50 transition-colors">
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    <td class="px-6 py-4 w-1/6">
                         <div class="flex items-center">
                             <div class="p-2 rounded-lg bg-blue-100 text-blue-600 mr-3">
                                 <i class="fas fa-calendar-alt"></i>
@@ -210,13 +253,13 @@
                             </div>
                         </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    <td class="px-6 py-4 w-1/6">
                         <div class="flex items-center">
                             <span class="font-medium text-gray-900 mr-2">{{ $report->total_requests ?? 0 }}</span>
                             <span class="text-xs text-gray-500 mt-1">Requests made</span>
                         </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    <td class="px-6 py-4 w-1/6">
                         <div class="flex items-center">
                             <span class="font-medium {{ $report->total_restocked > 0 ? 'text-green-600' : 'text-gray-900' }} mr-2">
                                 {{ $report->total_restocked > 0 ? '+' : '' }}{{ $report->total_restocked }}
@@ -224,13 +267,13 @@
                             <span class="text-xs text-gray-500">Quantity added</span>
                         </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    <td class="px-6 py-4 w-1/6">
                         <div class="flex items-center">
                             <span class="font-medium text-gray-900 mr-2">{{ $report->total_claimed }}</span>
                             <div class="text-xs text-gray-500 mt-1">Items claimed</div>
                         </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    <td class="px-6 py-4 w-1/6">
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $statusColor }}">
                             <i class="{{ $statusIcon }} mr-1"></i>
                             {{ $report->status }}
@@ -239,7 +282,7 @@
                             @endif
                         </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    <td class="px-6 py-4 w-1/6">
                         <div class="flex items-center space-x-2">
                             <!-- Download Button with Dropdown -->
                             <div class="relative">
@@ -543,20 +586,43 @@ function navigateYear(direction) {
     let newYear;
     if (direction === 'prev') {
         newYear = parseInt(currentYear) - 1;
-    } else if (direction === 'next' && currentYear < new Date().getFullYear()) {
+    } else if (direction === 'next') {
         newYear = parseInt(currentYear) + 1;
+        
+        // Check if next year is in the future
+        const currentActualYear = new Date().getFullYear();
+        if (newYear > currentActualYear) {
+            // Check if next year is exactly one year ahead (2027 when current is 2026)
+            if (newYear === currentActualYear + 1) {
+                // Allow navigation to next year even if it's future
+                // It will appear as disabled in dropdown
+            } else if (newYear > currentActualYear + 1) {
+                alert(`Cannot navigate to ${newYear}. You can only view data up to ${currentActualYear + 1}.`);
+                return;
+            }
+        }
     } else {
         return;
     }
     
     // Check if the new year exists in the dropdown
-    const optionExists = Array.from(yearSelect.options).some(option => option.value === newYear.toString());
+    const optionExists = Array.from(yearSelect.options).some(option => 
+        option.value === newYear.toString() && !option.disabled
+    );
     
-    if (optionExists || newYear > 2000) {
+    if (optionExists) {
         yearSelect.value = newYear;
         yearFilterForm.submit();
     } else {
-        alert(`No data available for ${newYear}`);
+        // Check if it's a disabled future year
+        const futureOption = Array.from(yearSelect.options).find(option => 
+            option.value === newYear.toString() && option.disabled
+        );
+        if (futureOption) {
+            alert(`${futureOption.textContent} is not available yet.`);
+        } else {
+            alert(`No data available for ${newYear}`);
+        }
     }
 }
 </script>

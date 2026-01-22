@@ -25,96 +25,154 @@
                         @endif
                     </div>
                     
+                    <!-- Notification Summary -->
+                    <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-medium text-gray-800">Summary</h3>
+                                <p class="text-sm text-gray-600">
+                                    {{ $notifications->total() }} total notification(s)
+                                    @if($unreadCount > 0)
+                                        • <span class="text-blue-600 font-medium">{{ $unreadCount }} unread</span>
+                                    @endif
+                                </p>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                Last updated: {{ now()->format('M d, Y h:i A') }}
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Grouped Notifications -->
-                    <div class="space-y-8">
+                    <div class="space-y-6">
                         @forelse($groupedNotifications as $teamName => $teamNotifications)
-                            <div class="team-group border border-gray-200 rounded-lg overflow-hidden">
+                            <div class="team-group border border-gray-200 rounded-lg overflow-hidden shadow-sm">
                                 <!-- Team Header -->
-                                <div class="bg-blue-800 text-white px-6 py-4 flex justify-between items-center">
-                                    <div class="flex items-center">
-                                        <div class="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center mr-3">
-                                            <i class="fas fa-users text-white"></i>
+                                <div class="bg-gradient-to-r from-blue-700 to-blue-800 text-white px-6 py-4">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center mr-3">
+                                                <i class="fas fa-users text-white"></i>
+                                            </div>
+                                            <div>
+                                                <!-- Display team with number -->
+                                                <h3 class="font-bold text-lg">
+                                                    @if(str_contains($teamName, 'Team') || is_numeric($teamName))
+                                                        {{ $teamName }}
+                                                    @else
+                                                        {{ $teamName }} (Team)
+                                                    @endif
+                                                </h3>
+                                                @php
+                                                    $teamUnreadCount = $teamNotifications->where('is_read', false)->count();
+                                                    $teamTotalCount = $teamNotifications->count();
+                                                    $teamResolvedCount = $teamNotifications->where('data.is_resolved', true)->count();
+                                                @endphp
+                                                <div class="flex items-center space-x-4 text-sm text-blue-200">
+                                                    <span>{{ $teamTotalCount }} notification(s)</span>
+                                                    @if($teamUnreadCount > 0)
+                                                        <span class="px-2 py-0.5 bg-yellow-500 text-white rounded-full text-xs">
+                                                            {{ $teamUnreadCount }} unread
+                                                        </span>
+                                                    @endif
+                                                    @if($teamResolvedCount > 0)
+                                                        <span class="px-2 py-0.5 bg-green-500 text-white rounded-full text-xs">
+                                                            {{ $teamResolvedCount }} resolved
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <!-- Always display team number -->
-                                            <h3 class="font-bold text-lg">
-                                                @if(preg_match('/Team\s+(\d+)/', $teamName, $matches))
-                                                    Team {{ $matches[1] }}
-                                                @elseif(is_numeric($teamName))
-                                                    Team {{ $teamName }}
-                                                @else
-                                                    {{ $teamName }}
-                                                @endif
-                                            </h3>
-                                            @php
-                                                $teamUnreadCount = $teamNotifications->where('is_read', false)->count();
-                                                $teamTotalCount = $teamNotifications->count();
-                                            @endphp
-                                            <p class="text-gray-300 text-sm">
-                                                {{ $teamTotalCount }} notification(s)
-                                                @if($teamUnreadCount > 0)
-                                                    <span class="text-yellow-300 ml-2">({{ $teamUnreadCount }} unread)</span>
-                                                @endif
-                                            </p>
-                                        </div>
+                                        @if($teamUnreadCount > 0)
+                                            <button class="mark-team-read px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md transition duration-150"
+                                                    data-team="{{ $teamName }}">
+                                                <i class="fas fa-check mr-1.5"></i> Mark Team as Read
+                                            </button>
+                                        @endif
                                     </div>
                                 </div>
                                 
                                 <!-- Team Notifications -->
-                                <div class="divide-y divide-gray-200">
+                                <div class="divide-y divide-gray-100">
                                     @foreach($teamNotifications as $notification)
-                                        <div class="notification-item {{ $notification->is_read ? 'bg-white read-notification' : 'bg-blue-50 unread-notification' }} hover:bg-gray-50 transition duration-150">
+                                        @php
+                                            $data = $notification->data;
+                                            $isResolved = $data['is_resolved'] ?? false;
+                                            $statusIcon = $data['status_icon'] ?? '';
+                                            $statusText = $data['status_text'] ?? ($data['status'] ?? '');
+                                            $processedBy = $data['processed_by'] ?? null;
+                                            $resolvedAt = $data['resolved_at'] ?? null;
+                                            $teamDisplay = $data['team_display'] ?? $teamName;
+                                            $requestedBy = $data['requested_by'] ?? ($data['user_name'] ?? 'Team Member');
+                                        @endphp
+                                        
+                                        <div class="notification-item {{ $notification->is_read ? 'bg-white' : 'bg-blue-50' }} hover:bg-gray-50 transition duration-150">
                                             <div class="p-5">
                                                 <div class="flex justify-between items-start">
                                                     <div class="flex-1">
                                                         <div class="flex items-start">
-                                                            @if($notification->type === 'new_request')
-                                                                <div class="mr-3 mt-1">
-                                                                    <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                                                                        <i class="fas fa-plus text-green-600 text-sm"></i>
+                                                            <!-- Status Icon -->
+                                                            <div class="mr-3 mt-1">
+                                                                @if($notification->type === 'new_request')
+                                                                    <div class="h-10 w-10 rounded-full {{ $isResolved ? 'bg-green-100' : 'bg-blue-100' }} flex items-center justify-center">
+                                                                        @if($isResolved)
+                                                                            <i class="fas fa-check text-green-600 text-lg"></i>
+                                                                        @else
+                                                                            <i class="fas fa-plus text-blue-600 text-lg"></i>
+                                                                        @endif
                                                                     </div>
-                                                                </div>
-                                                            @elseif($notification->type === 'request_status')
-                                                                <div class="mr-3 mt-1">
-                                                                    @if(isset($notification->data['status']) && $notification->data['status'] === 'approved')
-                                                                        <div class="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center">
-                                                                            <i class="fas fa-check text-emerald-600 text-sm"></i>
-                                                                        </div>
-                                                                    @else
-                                                                        <div class="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
-                                                                            <i class="fas fa-times text-red-600 text-sm"></i>
-                                                                        </div>
-                                                                    @endif
-                                                                </div>
-                                                            @else
-                                                                <div class="mr-3 mt-1">
-                                                                    <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
-                                                                        <i class="fas fa-bell text-gray-600 text-sm"></i>
+                                                                @elseif($notification->type === 'request_status')
+                                                                    <div class="h-10 w-10 rounded-full 
+                                                                        @if($data['status'] === 'approved') bg-emerald-100
+                                                                        @elseif($data['status'] === 'rejected') bg-red-100
+                                                                        @elseif($data['status'] === 'claimed') bg-blue-100
+                                                                        @else bg-gray-100 @endif flex items-center justify-center">
+                                                                        @if($data['status'] === 'approved')
+                                                                            <i class="fas fa-check text-emerald-600 text-lg"></i>
+                                                                        @elseif($data['status'] === 'rejected')
+                                                                            <i class="fas fa-times text-red-600 text-lg"></i>
+                                                                        @elseif($data['status'] === 'claimed')
+                                                                            <i class="fas fa-box text-blue-600 text-lg"></i>
+                                                                        @else
+                                                                            <i class="fas fa-clock text-gray-600 text-lg"></i>
+                                                                        @endif
                                                                     </div>
-                                                                </div>
-                                                            @endif
+                                                                @else
+                                                                    <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                                                        <i class="fas fa-bell text-gray-600 text-lg"></i>
+                                                                    </div>
+                                                                @endif
+                                                            </div>
                                                             <div class="flex-1">
                                                                 <div class="flex justify-between items-start">
                                                                     <div>
-                                                                        <h3 class="font-semibold text-gray-900">{{ $notification->title }}</h3>
-                                                                        <!-- Requested By Section -->
-                                                                        @if(!empty($notification->user_name))
-                                                                            <div class="flex items-center mt-1 text-sm text-gray-600">
-                                                                                <i class="fas fa-user mr-2 text-gray-400"></i>
-                                                                                <span>Requested by: 
-                                                                                    <strong>
-                                                                                        @if(str_contains($notification->user_name, 'Team Member'))
-                                                                                            {{ $notification->team_name }} Member
-                                                                                        @else
-                                                                                            {{ $notification->user_name }}
-                                                                                        @endif
-                                                                                    </strong>
-                                                                                </span>
+                                                                        <h3 class="font-semibold text-gray-900 text-lg">{{ $notification->title }}</h3>
+                                                                        
+                                                                        <!-- Team & Requester Information -->
+                                                                        <div class="flex items-center mt-1 space-x-4 text-sm text-gray-600">
+                                                                            <div class="flex items-center">
+                                                                                <i class="fas fa-users mr-1.5 text-gray-400"></i>
+                                                                                <span class="font-medium">{{ $teamDisplay }}</span>
                                                                             </div>
-                                                                        @endif
+                                                                            <div class="flex items-center">
+                                                                                <i class="fas fa-user mr-1.5 text-gray-400"></i>
+                                                                                <span>Requested by: <strong>{{ $requestedBy }}</strong></span>
+                                                                            </div>
+                                                                            @if($data['item_name'] ?? false)
+                                                                            <div class="flex items-center">
+                                                                                <i class="fas fa-box mr-1.5 text-gray-400"></i>
+                                                                                <span>{{ $data['quantity'] ?? 0 }} × {{ $data['item_name'] }}</span>
+                                                                            </div>
+                                                                            @endif
+                                                                        </div>
                                                                     </div>
                                                                     <div class="text-right">
-                                                                        <span class="text-xs text-gray-500 block">{{ \Carbon\Carbon::parse($notification->created_at)->format('M d, Y h:i A') }}</span>
+                                                                        <span class="text-sm text-gray-500 block">
+                                                                            {{ $notification->created_at->format('M d, Y') }}
+                                                                        </span>
+                                                                        <span class="text-xs text-gray-400 block">
+                                                                            {{ $notification->created_at->format('h:i A') }}
+                                                                        </span>
                                                                         <!-- Status indicator -->
                                                                         @if($notification->is_read)
                                                                             <span class="inline-block mt-1 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">Read</span>
@@ -124,10 +182,38 @@
                                                                     </div>
                                                                 </div>
                                                                 
-                                                                <p class="text-gray-600 mt-2 text-sm">{{ $notification->message }}</p>
+                                                                <!-- Notification Message -->
+                                                                <p class="text-gray-700 mt-3 text-sm leading-relaxed">{{ $notification->message }}</p>
+                                                                
+                                                                <!-- RESOLVED STATUS SECTION -->
+                                                                @if($isResolved)
+                                                                    <div class="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                                                        <div class="flex items-center justify-between">
+                                                                            <div class="flex items-center">
+                                                                                <div class="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center mr-2">
+                                                                                    <i class="fas fa-check text-green-600 text-xs"></i>
+                                                                                </div>
+                                                                                <span class="font-medium text-green-800">Request Completed</span>
+                                                                            </div>
+                                                                            @if($statusIcon && $statusText)
+                                                                                <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                                                                                    {{ $statusIcon }} {{ $statusText }}
+                                                                                </span>
+                                                                            @endif
+                                                                        </div>
+                                                                        <div class="mt-2 text-sm text-green-700">
+                                                                            @if($processedBy)
+                                                                                <p><i class="fas fa-user-check mr-2"></i> Processed by: {{ $processedBy }}</p>
+                                                                            @endif
+                                                                            @if($resolvedAt)
+                                                                                <p><i class="fas fa-calendar-check mr-2"></i> Completed: {{ $resolvedAt }}</p>
+                                                                            @endif
+                                                                        </div>
+                                                                    </div>
+                                                                @endif
                                                                 
                                                                 <!-- REQUESTED ITEMS SECTION -->
-                                                                @if(!empty($notification->request_items))
+                                                                @if(!empty($notification->request_items) && count($notification->request_items) > 0)
                                                                     <div class="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
                                                                         <div class="flex items-center justify-between mb-2">
                                                                             <p class="text-sm font-semibold text-gray-800 flex items-center">
@@ -141,7 +227,7 @@
                                                                             @foreach($notification->request_items as $index => $item)
                                                                                 @if($index < 5)
                                                                                     <div class="flex items-center text-sm">
-                                                                                        <div class="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                                                                                        <div class="w-2 h-2 {{ $isResolved ? 'bg-green-500' : 'bg-blue-500' }} rounded-full mr-3"></div>
                                                                                         <span class="text-gray-700">{{ $item }}</span>
                                                                                     </div>
                                                                                 @endif
@@ -158,17 +244,31 @@
                                                                     </div>
                                                                 @endif
                                                                 
-                                                                <!-- TYPE & STATUS BADGES -->
+                                                                <!-- STATUS & TYPE BADGES -->
                                                                 <div class="mt-4 flex items-center flex-wrap gap-2">
+                                                                    <!-- STATUS BADGE -->
+                                                                    @if(isset($data['status']))
+                                                                        @php
+                                                                            $statusColors = [
+                                                                                'approved' => ['bg' => 'bg-emerald-100', 'text' => 'text-emerald-800', 'border' => 'border-emerald-200'],
+                                                                                'rejected' => ['bg' => 'bg-red-100', 'text' => 'text-red-800', 'border' => 'border-red-200'],
+                                                                                'claimed' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-800', 'border' => 'border-blue-200'],
+                                                                                'pending' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-800', 'border' => 'border-yellow-200'],
+                                                                            ];
+                                                                            $color = $statusColors[$data['status']] ?? ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'border' => 'border-gray-200'];
+                                                                        @endphp
+                                                                        <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full {{ $color['bg'] }} {{ $color['text'] }} border {{ $color['border'] }}">
+                                                                            <i class="fas fa-flag mr-1.5"></i> {{ ucfirst($data['status']) }}
+                                                                            @if($statusIcon && !$isResolved)
+                                                                                <span class="ml-1">{{ $statusIcon }}</span>
+                                                                            @endif
+                                                                        </span>
+                                                                    @endif
                                                                     
-                                                                    <!-- STATUS BADGE IF APPLICABLE -->
-                                                                    @if(isset($notification->data['status']))
-                                                                        <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full 
-                                                                            @if($notification->data['status'] === 'approved') bg-emerald-100 text-emerald-800 border border-emerald-200
-                                                                            @elseif($notification->data['status'] === 'pending') bg-yellow-100 text-yellow-800 border border-yellow-200
-                                                                            @elseif($notification->data['status'] === 'rejected') bg-red-100 text-red-800 border border-red-200
-                                                                            @else bg-gray-100 text-gray-800 border border-gray-200 @endif">
-                                                                            <i class="fas fa-flag mr-1.5"></i> {{ ucfirst($notification->data['status']) }}
+                                                                    <!-- RESOLVED BADGE -->
+                                                                    @if($isResolved)
+                                                                        <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full bg-green-100 text-green-800 border border-green-200">
+                                                                            <i class="fas fa-check-circle mr-1.5"></i> Completed
                                                                         </span>
                                                                     @endif
                                                                     
@@ -186,7 +286,7 @@
                                                         <div class="mt-4 flex justify-between items-center">
                                                             <!-- VIEW DETAILS LINK -->
                                                             @if($notification->url && $notification->url !== '#')
-                                                                <a href="{{ $notification->url }}" class="inline-flex items-center px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition duration-150 border border-emerald-200 font-medium text-sm">
+                                                                <a href="{{ $notification->url }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition duration-150 font-medium text-sm">
                                                                     <i class="fas fa-external-link-alt mr-2"></i> View Request Details
                                                                 </a>
                                                             @else
@@ -195,10 +295,10 @@
                                                             
                                                             <!-- MARK READ BUTTON -->
                                                             @if(!$notification->is_read)
-                                                                <button class="mark-read-single ml-4 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150 shadow-sm flex items-center" 
+                                                                <button class="mark-read-single px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150 shadow-sm flex items-center" 
                                                                         data-id="{{ $notification->id }}"
                                                                         data-team="{{ $teamName }}">
-                                                                    <i class="fas fa-check mr-2"></i> Mark Read
+                                                                    <i class="fas fa-check mr-2"></i> Mark as Read
                                                                 </button>
                                                             @endif
                                                         </div>
@@ -266,8 +366,8 @@
                     if (data.success) {
                         // Update classes on the notification item
                         if (notificationItem) {
-                            notificationItem.classList.remove('bg-blue-50', 'unread-notification');
-                            notificationItem.classList.add('bg-white', 'read-notification');
+                            notificationItem.classList.remove('bg-blue-50');
+                            notificationItem.classList.add('bg-white');
                             
                             // Update status indicator
                             const statusIndicator = notificationItem.querySelector('.bg-blue-100');
@@ -329,7 +429,7 @@
                 
                 // Get all unread notification IDs for this team
                 const notificationIds = [];
-                teamGroup.querySelectorAll('.unread-notification .mark-read-single').forEach(notificationBtn => {
+                teamGroup.querySelectorAll('.notification-item:not(.bg-white) .mark-read-single').forEach(notificationBtn => {
                     notificationIds.push(notificationBtn.getAttribute('data-id'));
                 });
                 
@@ -360,9 +460,9 @@
                         
                         if (successful > 0) {
                             // Update all unread notifications in this team
-                            teamGroup.querySelectorAll('.unread-notification').forEach(item => {
-                                item.classList.remove('bg-blue-50', 'unread-notification');
-                                item.classList.add('bg-white', 'read-notification');
+                            teamGroup.querySelectorAll('.notification-item:not(.bg-white)').forEach(item => {
+                                item.classList.remove('bg-blue-50');
+                                item.classList.add('bg-white');
                                 
                                 // Update status indicator
                                 const statusIndicator = item.querySelector('.bg-blue-100');
@@ -385,7 +485,7 @@
                             });
                             
                             // Hide team mark read button if no unread notifications left
-                            const remainingUnread = teamGroup.querySelectorAll('.unread-notification').length;
+                            const remainingUnread = teamGroup.querySelectorAll('.notification-item:not(.bg-white)').length;
                             if (remainingUnread === 0) {
                                 this.style.display = 'none';
                             }
@@ -447,10 +547,10 @@
                     
                     if (data.success) {
                         // Update all unread notifications on page
-                        document.querySelectorAll('.unread-notification').forEach(item => {
+                        document.querySelectorAll('.notification-item:not(.bg-white)').forEach(item => {
                             // Change from blue to white background
-                            item.classList.remove('bg-blue-50', 'unread-notification');
-                            item.classList.add('bg-white', 'read-notification');
+                            item.classList.remove('bg-blue-50');
+                            item.classList.add('bg-white');
                             
                             // Update status indicator
                             const statusIndicator = item.querySelector('.bg-blue-100');
@@ -517,19 +617,26 @@
             // Find the team group
             const teamGroups = document.querySelectorAll('.team-group');
             teamGroups.forEach(group => {
-                const teamHeader = group.querySelector('.bg-gray-800 h3');
-                if (teamHeader && teamHeader.textContent.trim() === teamName) {
-                    const unreadCount = group.querySelectorAll('.unread-notification').length;
+                const teamHeader = group.querySelector('h3');
+                if (teamHeader && teamHeader.textContent.trim().includes(teamName)) {
+                    const unreadCount = group.querySelectorAll('.notification-item:not(.bg-white)').length;
                     const totalCount = group.querySelectorAll('.notification-item').length;
+                    const resolvedCount = group.querySelectorAll('.bg-green-50').length;
                     
                     // Update team count in header
-                    const countElement = group.querySelector('.bg-gray-800 .text-sm');
-                    if (countElement) {
+                    const countContainer = group.querySelector('.text-sm.text-blue-200');
+                    if (countContainer) {
+                        let countHtml = `${totalCount} notification(s)`;
+                        
                         if (unreadCount > 0) {
-                            countElement.innerHTML = `${totalCount} notification(s) <span class="text-yellow-300 ml-2">(${unreadCount} unread)</span>`;
-                        } else {
-                            countElement.innerHTML = `${totalCount} notification(s)`;
+                            countHtml += ` <span class="px-2 py-0.5 bg-yellow-500 text-white rounded-full text-xs">${unreadCount} unread</span>`;
                         }
+                        
+                        if (resolvedCount > 0) {
+                            countHtml += ` <span class="px-2 py-0.5 bg-green-500 text-white rounded-full text-xs">${resolvedCount} resolved</span>`;
+                        }
+                        
+                        countContainer.innerHTML = countHtml;
                     }
                     
                     // Hide team mark read button if no unread notifications
@@ -543,17 +650,24 @@
         
         function updateAllTeamUnreadCounts() {
             document.querySelectorAll('.team-group').forEach(group => {
-                const unreadCount = group.querySelectorAll('.unread-notification').length;
+                const unreadCount = group.querySelectorAll('.notification-item:not(.bg-white)').length;
                 const totalCount = group.querySelectorAll('.notification-item').length;
+                const resolvedCount = group.querySelectorAll('.bg-green-50').length;
                 
                 // Update team count in header
-                const countElement = group.querySelector('.bg-gray-800 .text-sm');
-                if (countElement) {
+                const countContainer = group.querySelector('.text-sm.text-blue-200');
+                if (countContainer) {
+                    let countHtml = `${totalCount} notification(s)`;
+                    
                     if (unreadCount > 0) {
-                        countElement.innerHTML = `${totalCount} notification(s) <span class="text-yellow-300 ml-2">(${unreadCount} unread)</span>`;
-                    } else {
-                        countElement.innerHTML = `${totalCount} notification(s)`;
+                        countHtml += ` <span class="px-2 py-0.5 bg-yellow-500 text-white rounded-full text-xs">${unreadCount} unread</span>`;
                     }
+                    
+                    if (resolvedCount > 0) {
+                        countHtml += ` <span class="px-2 py-0.5 bg-green-500 text-white rounded-full text-xs">${resolvedCount} resolved</span>`;
+                    }
+                    
+                    countContainer.innerHTML = countHtml;
                 }
                 
                 // Hide team mark read button if no unread notifications

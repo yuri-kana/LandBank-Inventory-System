@@ -120,30 +120,60 @@
         </main>
     </div>
 
-    <!-- JS -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Alert dismiss
-            document.querySelectorAll('[data-dismiss]').forEach(el => {
-                el.addEventListener('click', () => {
-                    el.parentElement.style.display = 'none';
-                });
-            });
-
-            // Active link highlight
-            const currentPath = window.location.pathname;
-            document.querySelectorAll('nav a').forEach(link => {
-                if (
-                    link.getAttribute('href') === currentPath ||
-                    (currentPath.startsWith('/items') && link.href.includes('/items')) ||
-                    (currentPath.startsWith('/requests') && link.href.includes('/requests')) ||
-                    (currentPath.startsWith('/teams') && link.href.includes('/teams'))
-                ) {
-                    link.classList.add('active');
-                }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Alert dismiss
+        document.querySelectorAll('[data-dismiss]').forEach(el => {
+            el.addEventListener('click', () => {
+                el.parentElement.style.display = 'none';
             });
         });
-    </script>
+
+        // Active link highlight
+        const currentPath = window.location.pathname;
+        document.querySelectorAll('nav a').forEach(link => {
+            if (
+                link.getAttribute('href') === currentPath ||
+                (currentPath.startsWith('/items') && link.href.includes('/items')) ||
+                (currentPath.startsWith('/requests') && link.href.includes('/requests')) ||
+                (currentPath.startsWith('/teams') && link.href.includes('/teams'))
+            ) {
+                link.classList.add('active');
+            }
+        });
+    });
+</script>
+
+<!-- Auto-Notifications Script (only load on relevant pages) -->
+@if(request()->routeIs('requests.*') || request()->routeIs('notifications.*') || (isset($teamRequest) && $teamRequest))
+<script src="{{ asset('js/auto-notifications.js') }}"></script>
+
+<script>
+// Initialize auto-notification system
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.autoNotificationSystem) {
+        // Check if we're on a specific request page
+        @if(isset($teamRequest) && $teamRequest)
+            window.autoNotificationSystem.initForRequest({{ $teamRequest->id }});
+        @elseif(request()->routeIs('requests.index'))
+            window.autoNotificationSystem.initForAllRequests();
+        @endif
+        
+        // Also auto-mark notifications when viewing notification page
+        @if(request()->routeIs('notifications.index'))
+            // Get request IDs from notifications and auto-mark them
+            const notificationItems = document.querySelectorAll('[data-request-id]');
+            notificationItems.forEach(item => {
+                const requestId = item.getAttribute('data-request-id');
+                if (requestId) {
+                    window.autoNotificationSystem.autoMarkAsDone(requestId);
+                }
+            });
+        @endif
+    }
+});
+</script>
+@endif
 
 </body>
 </html>

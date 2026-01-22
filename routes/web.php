@@ -104,6 +104,10 @@ Route::middleware(['auth', 'verified.email'])->group(function () {
         Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('markAsRead');
         Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('markAllAsRead');
         Route::get('/count', [NotificationController::class, 'getCount'])->name('count');
+        
+        // NEW ROUTES FOR AUTO-NOTIFICATIONS
+        Route::get('/request/{requestId}', [NotificationController::class, 'getRequestNotifications'])->name('requestNotifications');
+        Route::post('/auto-mark-done/{requestId}', [NotificationController::class, 'autoMarkAsDone'])->name('autoMarkAsDone');
     });
     
     // Requests Routes (for all authenticated users)
@@ -112,12 +116,21 @@ Route::middleware(['auth', 'verified.email'])->group(function () {
         Route::get('/create', [TeamRequestController::class, 'create'])->name('create');
         Route::post('/', [TeamRequestController::class, 'store'])->name('store');
         Route::delete('/{teamRequest}', [TeamRequestController::class, 'destroy'])->name('destroy');
+        
+        // Add the show route if you don't have it yet
+        Route::get('/{teamRequest}', [TeamRequestController::class, 'show'])->name('show');
     });
 
     // Items Routes (view only for staff)
     Route::get('/items', [ItemController::class, 'index'])->name('items.index');
     Route::get('/items/{item}', [ItemController::class, 'show'])->name('items.show');
-
+    
+    // ========== ADD THIS API ROUTE ==========
+    // API route for checking request status (for auto-notifications)
+    Route::get('/api/requests/{id}/status', [TeamRequestController::class, 'getStatus'])
+        ->name('api.requests.status');
+    // =========================================
+    
     /*
     |----------------------------------------------------------------------
     | Admin Routes
@@ -304,4 +317,10 @@ Route::get('/test-db', function() {
             ]
         ], 500);
     }
+
+    Route::get('/run-import', function() {
+        // Include and run the import script
+        include base_path('import-data.php');
+        return ''; // Script already outputs
+    });
 });

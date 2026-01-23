@@ -46,21 +46,21 @@ class NewRequestNotification extends Notification implements ShouldQueue
             'team_id' => $team->id ?? null,
             'team_name' => $team->name ?? 'Team',
             'team_number' => $teamNumber,
-            'team_display' => $teamDisplay, // NEW: Consistent team display
+            'team_display' => $teamDisplay,
             'department' => $team->name ?? 'Team',
             'requested_by' => $this->requestedBy,
             'user_name' => $this->requestedBy,
-            'user_id' => $this->teamRequest->user_id ?? auth()->id(), // FIXED: Use request's user_id
+            'user_id' => $this->teamRequest->user_id ?? auth()->id(),
             'request_id' => $this->teamRequest->id,
             'item_name' => $item->name,
             'quantity' => $this->teamRequest->quantity_requested,
-            'status' => 'pending', // NEW: Add status field
-            'status_icon' => '⏳', // NEW: Add icon
-            'status_text' => 'Pending', // NEW: Add status text
-            'is_resolved' => false, // NEW: Track if resolved
+            'status' => 'pending',
+            'status_icon' => '⏳',
+            'status_text' => 'Pending',
+            'notification_type' => 'new_request', // NEW: Specific type identifier
             'url' => route('requests.index'),
             'type' => 'new_request',
-            'created_at' => now()->format('M d, Y h:i A'), // NEW: Add timestamp
+            'created_at' => now()->format('M d, Y h:i A'),
         ];
     }
 

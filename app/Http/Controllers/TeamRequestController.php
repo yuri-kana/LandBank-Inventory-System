@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TeamRequest;
 use App\Models\Item;
 use App\Models\User;
-use App\Models\Team; // Added this import
+use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use App\Services\NotificationManager;
 use App\Notifications\TeamNotification;
 use App\Notifications\AdminNotification;
+use App\Notifications\RequestActionNotification;
 
 class TeamRequestController extends Controller
 {
@@ -24,6 +25,26 @@ class TeamRequestController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+        
+        // AUTO-MARK NOTIFICATIONS AS READ: When admin/head visits requests page
+        if ($user->isAdmin()) {
+            // Admin: Mark all "New Inventory Request" notifications as read
+            $this->markAllNewRequestNotificationsAsRead();
+            
+            Log::info('Admin visited requests page - marked new request notifications as read', [
+                'user_id' => $user->id,
+                'user_email' => $user->email
+            ]);
+        } else if ($user->isTeamMember()) {
+            // Team member: Mark all "Request Action" notifications as read
+            $markedCount = $this->markAllRequestActionNotificationsAsRead();
+            
+            Log::info('Team member visited requests page - marked request action notifications as read', [
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'marked_count' => $markedCount
+            ]);
+        }
         
         // Build query with eager loading
         $query = TeamRequest::with(['team', 'item', 'approver', 'claimer'])
@@ -167,6 +188,7 @@ class TeamRequestController extends Controller
                 'item_id' => $request->item_id,
                 'quantity_requested' => $request->quantity_requested,
                 'status' => 'pending',
+                'user_id' => $user->id, // Store who made the request
             ]);
 
             // Update available stock
@@ -273,7 +295,24 @@ class TeamRequestController extends Controller
                 $teamRequest->reject(auth()->id(), $request->admin_notes);
             }
 
-            // Send notification to ALL team members using the Notification class
+            // Send RequestActionNotification to the requester
+            $requester = $teamRequest->user;
+            if ($requester) {
+                $requester->notify(new RequestActionNotification(
+                    $teamRequest,
+                    $request->status,
+                    auth()->user()->name
+                ));
+                
+                Log::info('Sent RequestActionNotification to requester', [
+                    'request_id' => $teamRequest->id,
+                    'requester_id' => $requester->id,
+                    'requester_email' => $requester->email,
+                    'action' => $request->status
+                ]);
+            }
+
+            // Also notify all team members (optional)
             $team = $teamRequest->team;
             if ($team) {
                 $notification = new \App\Notifications\RequestStatusNotification(
@@ -282,17 +321,21 @@ class TeamRequestController extends Controller
                     auth()->user()->name
                 );
                 
-                // Send to all active team members
-                $team->notifyAllMembers($notification);
+                // Send to all active team members except the one who already got the specific notification
+                foreach ($team->activeUsers()->get() as $member) {
+                    if (!$requester || $member->id !== $requester->id) {
+                        $member->notify($notification);
+                    }
+                }
             }
 
-            // AUTO MARK AS READ: Mark the "New Inventory Request" notification as read
-            $markedCount = NotificationManager::markNewRequestNotificationsDirect($teamRequest);
+            // AUTO MARK AS READ: Mark the "New Inventory Request" notification as read for all admins
+            $markedCount = $this->markSpecificNewRequestNotificationAsRead($teamRequest->id);
             
-            Log::info('Auto-marked notifications as read', [
+            Log::info('Auto-marked new request notifications as read', [
                 'request_id' => $teamRequest->id,
                 'marked_count' => $markedCount,
-                'action' => 'update_status'
+                'action' => 'update_status_' . $request->status
             ]);
 
             DB::commit();
@@ -301,7 +344,7 @@ class TeamRequestController extends Controller
                 'request_id' => $teamRequest->id,
                 'status' => $request->status,
                 'admin' => auth()->user()->email,
-                'notifications_marked_read' => $markedCount
+                'new_request_notifications_marked' => $markedCount
             ]);
 
             return redirect()->route('requests.index')
@@ -538,5 +581,78 @@ class TeamRequestController extends Controller
         }
         
         return null;
+    }
+
+    /**
+     * Mark all new request notifications as read for the current admin
+     */
+    private function markAllNewRequestNotificationsAsRead()
+    {
+        try {
+            $user = auth()->user();
+            
+            // Mark notifications of type NewRequestNotification as read
+            $markedCount = $user->notifications()
+                ->where('type', \App\Notifications\NewRequestNotification::class)
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
+            
+            return $markedCount;
+        } catch (\Exception $e) {
+            Log::error('Failed to mark new request notifications as read', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+            return 0;
+        }
+    }
+
+    /**
+     * Mark all request action notifications as read for the current team member
+     */
+    private function markAllRequestActionNotificationsAsRead()
+    {
+        try {
+            $user = auth()->user();
+            
+            // Mark notifications of type RequestActionNotification as read
+            $markedCount = $user->notifications()
+                ->where('type', \App\Notifications\RequestActionNotification::class)
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
+            
+            return $markedCount;
+        } catch (\Exception $e) {
+            Log::error('Failed to mark request action notifications as read', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+            return 0;
+        }
+    }
+
+    /**
+     * Mark specific new request notification as read
+     */
+    private function markSpecificNewRequestNotificationAsRead($requestId)
+    {
+        try {
+            $user = auth()->user();
+            
+            // Mark specific new request notification
+            $markedCount = $user->notifications()
+                ->where('type', \App\Notifications\NewRequestNotification::class)
+                ->where('data->request_id', $requestId)
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
+            
+            return $markedCount;
+        } catch (\Exception $e) {
+            Log::error('Failed to mark specific new request notification', [
+                'error' => $e->getMessage(),
+                'request_id' => $requestId
+            ]);
+            return 0;
+        }
     }
 }

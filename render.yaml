@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: laravel-app
+    name: inventory-system
     env: php
     buildCommand: "./render-build.sh"
     startCommand: "php artisan serve --host=0.0.0.0 --port=8000"
@@ -11,15 +11,17 @@ services:
         value: false
       - key: APP_KEY
         generateValue: true
+      - key: APP_URL
+        generateValue: true
       - key: DB_CONNECTION
-        value: mysql
+        value: pgsql
       - key: DB_HOST
-        value: yamanote.proxy.rlwy.net
+        value: dpg-d5lo514oud1c738sfbk0-a
       - key: DB_PORT
-        value: "37670"
+        value: 5432
       - key: DB_DATABASE
-        value: railway
+        value: inventory_team_8bk0
       - key: DB_USERNAME
-        value: root
+        value: inventory_team
       - key: DB_PASSWORD
-        value: GWvnFuXf1VFyhKCsSPEHtAMYLzWcFBko
+        value: yVCTTuhQHMww7LKnoq3MwmVufKJBdrcy

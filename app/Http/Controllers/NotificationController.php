@@ -80,9 +80,11 @@ class NotificationController extends Controller
                 'user_name' => $userName,
                 'request_id' => $notificationData['request_id'] ?? null,
                 'status' => $notificationData['status'] ?? null,
+                'action' => $notificationData['action'] ?? null,
                 'item_name' => $notificationData['item_name'] ?? null,
                 'quantity' => $notificationData['quantity'] ?? null,
                 'user_id' => $notificationData['user_id'] ?? null,
+                'action_by' => $notificationData['action_by'] ?? null,
             ];
         });
         
@@ -150,6 +152,7 @@ class NotificationController extends Controller
         $userName = $data['user_name'] ?? 
                    $data['requested_by'] ?? 
                    $data['processed_by'] ?? 
+                   $data['action_by'] ?? 
                    $data['user'] ?? '';
         
         // If we have user_id but no name, fetch from database
@@ -194,6 +197,10 @@ class NotificationController extends Controller
             return 'new_request';
         }
         
+        if ($notification->type === 'App\Notifications\RequestActionNotification') {
+            return 'request_action';
+        }
+        
         if ($notification->type === 'App\Notifications\RequestStatusNotification') {
             return 'request_status';
         }
@@ -209,13 +216,11 @@ class NotificationController extends Controller
         $url = $data['url'] ?? '#';
         
         if ($url === '#' && isset($data['request_id'])) {
-            return route('requests.show', ['teamRequest' => $data['request_id']]);
+            return route('requests.index'); // Go to requests page instead of specific request
         }
         
         return $url;
     }
-    
-    // ... rest of your methods remain the same (markAsRead, markAllAsRead, etc.)
     
     public function markAsRead($id)
     {
@@ -253,6 +258,130 @@ class NotificationController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error getting notification count: ' . $e->getMessage());
             return response()->json(['count' => 0, 'success' => false], 500);
+        }
+    }
+    
+    /**
+     * Get specific type notification count
+     */
+    public function getActionNotificationCount()
+    {
+        try {
+            $user = Auth::user();
+            
+            // Count only RequestActionNotification type for team members
+            if ($user->isTeamMember()) {
+                $count = $user->notifications()
+                    ->where('type', \App\Notifications\RequestActionNotification::class)
+                    ->whereNull('read_at')
+                    ->count();
+            } 
+            // For admins, count NewRequestNotification type
+            elseif ($user->isAdmin()) {
+                $count = $user->notifications()
+                    ->where('type', \App\Notifications\NewRequestNotification::class)
+                    ->whereNull('read_at')
+                    ->count();
+            } else {
+                $count = 0;
+            }
+            
+            return response()->json([
+                'count' => $count,
+                'success' => true,
+                'user_role' => $user->role
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error getting action notification count: ' . $e->getMessage());
+            return response()->json([
+                'count' => 0,
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * Get notifications for a specific request
+     */
+    public function getRequestNotifications($requestId)
+    {
+        try {
+            $notifications = Auth::user()->notifications()
+                ->where(function($query) use ($requestId) {
+                    $query->where('type', \App\Notifications\NewRequestNotification::class)
+                          ->orWhere('type', \App\Notifications\RequestActionNotification::class)
+                          ->orWhere('type', \App\Notifications\RequestStatusNotification::class);
+                })
+                ->where('data->request_id', $requestId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            return response()->json([
+                'notifications' => $notifications,
+                'count' => $notifications->count(),
+                'unread_count' => $notifications->whereNull('read_at')->count(),
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error getting request notifications: ' . $e->getMessage());
+            return response()->json([
+                'notifications' => [],
+                'count' => 0,
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * Automatically mark notifications as read for a specific request
+     * This is called when admin approves/rejects or when user visits requests page
+     */
+    public function autoMarkAsDone($requestId)
+    {
+        try {
+            $user = Auth::user();
+            $markedCount = 0;
+            
+            // Admin: Mark NewRequestNotification
+            if ($user->isAdmin()) {
+                $markedCount += $user->notifications()
+                    ->where('type', \App\Notifications\NewRequestNotification::class)
+                    ->where('data->request_id', $requestId)
+                    ->whereNull('read_at')
+                    ->update(['read_at' => now()]);
+            }
+            
+            // Team Member: Mark RequestActionNotification and RequestStatusNotification
+            if ($user->isTeamMember()) {
+                $markedCount += $user->notifications()
+                    ->where(function($query) {
+                        $query->where('type', \App\Notifications\RequestActionNotification::class)
+                              ->orWhere('type', \App\Notifications\RequestStatusNotification::class);
+                    })
+                    ->where('data->request_id', $requestId)
+                    ->whereNull('read_at')
+                    ->update(['read_at' => now()]);
+            }
+            
+            \Log::info('Auto-marked notifications as done', [
+                'user_id' => $user->id,
+                'request_id' => $requestId,
+                'marked_count' => $markedCount
+            ]);
+            
+            return response()->json([
+                'marked_count' => $markedCount,
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error auto-marking notifications as done: ' . $e->getMessage());
+            return response()->json([
+                'marked_count' => 0,
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
     

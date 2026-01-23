@@ -681,6 +681,7 @@ class ComposerStaticInit9c491b8531eec05ba41a11d9276a5749
         'App\\Notifications\\AdminNotification' => __DIR__ . '/../..' . '/app/Notifications/AdminNotification.php',
         'App\\Notifications\\LandBankVerifyEmailNotification' => __DIR__ . '/../..' . '/app/Notifications/LandBankVerifyEmailNotification.php',
         'App\\Notifications\\NewRequestNotification' => __DIR__ . '/../..' . '/app/Notifications/NewRequestNotification.php',
+        'App\\Notifications\\RequestActionNotification' => __DIR__ . '/../..' . '/app/Notifications/RequestActionNotification.php',
         'App\\Notifications\\RequestStatusNotification' => __DIR__ . '/../..' . '/app/Notifications/RequestStatusNotification.php',
         'App\\Notifications\\TeamNotification' => __DIR__ . '/../..' . '/app/Notifications/TeamNotification.php',
         'App\\Notifications\\VerifyEmailNotification' => __DIR__ . '/../..' . '/app/Notifications/VerifyEmailNotification.php',

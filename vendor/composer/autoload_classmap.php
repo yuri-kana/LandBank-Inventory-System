@@ -65,6 +65,7 @@ return array(
     'App\\Notifications\\AdminNotification' => $baseDir . '/app/Notifications/AdminNotification.php',
     'App\\Notifications\\LandBankVerifyEmailNotification' => $baseDir . '/app/Notifications/LandBankVerifyEmailNotification.php',
     'App\\Notifications\\NewRequestNotification' => $baseDir . '/app/Notifications/NewRequestNotification.php',
+    'App\\Notifications\\RequestActionNotification' => $baseDir . '/app/Notifications/RequestActionNotification.php',
     'App\\Notifications\\RequestStatusNotification' => $baseDir . '/app/Notifications/RequestStatusNotification.php',
     'App\\Notifications\\TeamNotification' => $baseDir . '/app/Notifications/TeamNotification.php',
     'App\\Notifications\\VerifyEmailNotification' => $baseDir . '/app/Notifications/VerifyEmailNotification.php',
